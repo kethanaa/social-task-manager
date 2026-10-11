@@ -1,0 +1,158 @@
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+
+const app = express();
+const PORT = 3001;
+
+app.use(cors());
+app.use(bodyParser.json());
+
+const users = [{
+  id: 'u1',
+  name: 'Demo User',
+  email: 'user@example.com',
+  password: 'demo123',
+}];
+
+const tasks = [
+  {
+    id: 't1',
+    title: 'Launch campaign plan',
+    description: 'Finalize the announcement plan and share with team.',
+    status: 'In Review',
+    dueDate: '2026-10-15',
+  },
+  {
+    id: 't2',
+    title: 'Client onboarding deck',
+    description: 'Prepare the first set of slides for onboarding.',
+    status: 'Completed',
+    dueDate: '2026-10-12',
+  },
+  {
+    id: 't3',
+    title: 'Budget check',
+    description: 'Review next month spending and forecasts.',
+    status: 'Pending',
+    dueDate: '2026-10-18',
+  },
+];
+
+const messages = [
+  { id: 'm1', sender: 'team', text: 'New design edits are ready for review.', time: '09:15 AM' },
+  { id: 'm2', sender: 'me', text: 'Perfect, I will review before noon.', time: '09:17 AM' },
+  { id: 'm3', sender: 'team', text: 'The payment gateway is configured for the pilot launch.', time: '11:30 AM' },
+];
+
+const payments = [
+  { id: 'p1', amount: 120.00, description: 'Monthly SaaS', status: 'Paid', date: '2026-10-05' },
+  { id: 'p2', amount: 450.00, description: 'Campaign Boost', status: 'Pending', date: '2026-10-08' },
+  { id: 'p3', amount: 75.50, description: 'Design Support', status: 'Paid', date: '2026-10-09' },
+];
+
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, message: 'API is running' });
+});
+
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body || {};
+  const user = users.find((entry) => entry.email === email && entry.password === password);
+
+  if (!user) {
+    return res.status(401).json({ message: 'Invalid email or password.' });
+  }
+
+  const safeUser = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+  };
+
+  return res.json({ user: safeUser, token: 'demo-token-123' });
+});
+
+app.get('/api/dashboard', (req, res) => {
+  const totalRevenue = payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+  const pending = payments.filter((payment) => payment.status === 'Pending').length;
+
+  res.json({
+    totalRevenue,
+    activeUsers: 1248,
+    tasksCompleted: tasks.filter((task) => task.status === 'Completed').length,
+    pendingPayments: pending,
+    tasksCount: tasks.length,
+  });
+});
+
+app.get('/api/tasks', (req, res) => {
+  res.json(tasks);
+});
+
+app.post('/api/tasks', (req, res) => {
+  const { title, description, dueDate } = req.body || {};
+
+  if (!title) {
+    return res.status(400).json({ message: 'Task title is required.' });
+  }
+
+  const newTask = {
+    id: `t${Date.now()}`,
+    title,
+    description: description || '',
+    status: 'Pending',
+    dueDate: dueDate || '2026-10-20',
+  };
+
+  tasks.unshift(newTask);
+  return res.status(201).json(newTask);
+});
+
+app.get('/api/chat', (req, res) => {
+  res.json(messages);
+});
+
+app.post('/api/chat', (req, res) => {
+  const { text } = req.body || {};
+
+  if (!text || !text.trim()) {
+    return res.status(400).json({ message: 'Chat message is required.' });
+  }
+
+  const newMessage = {
+    id: `m${Date.now()}`,
+    sender: 'me',
+    text: text.trim(),
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  };
+
+  messages.push(newMessage);
+  return res.status(201).json(newMessage);
+});
+
+app.get('/api/payments', (req, res) => {
+  res.json(payments);
+});
+
+app.post('/api/payments', (req, res) => {
+  const { amount, description } = req.body || {};
+
+  if (!amount) {
+    return res.status(400).json({ message: 'Amount is required.' });
+  }
+
+  const payment = {
+    id: `p${Date.now()}`,
+    amount: Number(amount),
+    description: description || 'New payment',
+    status: 'Pending',
+    date: new Date().toISOString().slice(0, 10),
+  };
+
+  payments.unshift(payment);
+  return res.status(201).json(payment);
+});
+
+app.listen(PORT, () => {
+  console.log(`API running on http://localhost:${PORT}`);
+});

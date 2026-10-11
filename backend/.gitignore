@@ -1,0 +1,252 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { apiRequest } from '../services/api';
+import { theme } from '../theme';
+
+export default function PaymentsScreen() {
+  const [payments, setPayments] = useState([]);
+  const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState('');
+
+  const loadPayments = async () => {
+    const data = await apiRequest('/payments');
+    setPayments(data);
+  };
+
+  useEffect(() => {
+    loadPayments();
+  }, []);
+
+  const submitPayment = async () => {
+    if (!amount) {
+      Alert.alert('Missing amount', 'Please enter an amount before creating a payment.');
+      return;
+    }
+
+    try {
+      await apiRequest('/payments', 'POST', { amount, description });
+      setAmount('');
+      setDescription('');
+      loadPayments();
+    } catch (error) {
+      Alert.alert('Payment failed', error.message);
+    }
+  };
+
+  return (
+    <View>
+      <Text style={styles.heading}>Payments</Text>
+
+      <TextInput style={styles.input} placeholder="Amount" keyboardType="numeric" value={amount} onChangeText={setAmount} />
+      <TextInput style={styles.input} placeholder="Description" value={description} onChangeText={setDescription} />
+
+      <TouchableOpacity style={styles.button} onPress={submitPayment}>
+        <Text style={styles.buttonText}>Create payment</Text>
+      </TouchableOpacity>
+
+      {payments.map((payment) => (
+        <View key={payment.id} style={styles.item}>
+          <View>
+            <Text style={styles.title}>{payment.description}</Text>
+            <Text style={styles.subtitle}>{payment.date}</Text>
+          </View>
+          <View style={styles.rightBlock}>
+            <Text style={styles.amount}>${Number(payment.amount).toFixed(2)}</Text>
+            <Text style={[styles.status, payment.status === 'Paid' ? styles.statusPaid : styles.statusPending]}>
+              {payment.status}
+            </Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  heading: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 16,
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#e0e7ff',
+    marginBottom: 12,
+  },
+  button: {
+    backgroundColor: theme.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  item: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  title: {
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  subtitle: {
+    color: theme.muted,
+    fontSize: 12,
+  },
+  amount: {
+    fontWeight: '800',
+    color: theme.text,
+    marginBottom: 6,
+    textAlign: 'right',
+  },
+  rightBlock: {
+    alignItems: 'flex-end',
+  },
+  status: {
+    fontSize: 11,
+    fontWeight: '700',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  statusPaid: {
+    backgroundColor: '#dcfce7',
+    color: '#166534',
+  },
+  statusPending: {
+    backgroundColor: '#fef3c7',
+    color: '#92400e',
+  },
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
